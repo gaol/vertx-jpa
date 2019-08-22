@@ -10,7 +10,7 @@
 
   <groupId>com.spidercoding</groupId>
   <artifactId>vertx-jpa</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>The JPA extention in Vertx</name>
