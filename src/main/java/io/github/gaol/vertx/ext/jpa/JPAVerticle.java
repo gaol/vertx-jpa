@@ -1,11 +1,11 @@
-package com.spidercoding.vertx.jpa;
+package io.github.gaol.vertx.ext.jpa;
 
 
+import io.vertx.core.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.reactivex.Single;
-import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.CompletableHelper;
 import io.vertx.reactivex.core.AbstractVerticle;
@@ -26,14 +26,14 @@ public class JPAVerticle extends AbstractVerticle {
     private Record record;
 
     @Override
-    public void start(Future<Void> startFuture) throws Exception {
+    public void start(Promise<Void> promise) throws Exception {
         JsonObject config = config();
         String jpaAddress = config.getString(CONFIG_JPA_SERVICE_ADDRESS, JPAService.DEFAULT_SERVICE_PROXY_ADDRESS);
         boolean publishService = config.getBoolean(CONFIG_PUBLISH_JPA_SERVICE, true);
         String jpaServiceName = config.getString(CONFIG_JPA_SERVICE_NAME, JPAService.DEFAULT_SERVICE_NAME);
 
         JPAService.rxCreate(vertx.getDelegate(), jpaServiceName, config)
-            .<Record>flatMap(jpaService -> {
+            .flatMap(jpaService -> {
                 JPAService.rxRegister(getVertx(), jpaService, jpaAddress);
                 logger.info("Registered JPA service on address: {}", jpaAddress);
     
@@ -45,7 +45,7 @@ public class JPAVerticle extends AbstractVerticle {
                 return Single.just(new Record());
             }).subscribe((r, e) -> {
                 if (e != null) {
-                    startFuture.fail(e);
+                    promise.fail(e);
                 } else {
                     this.record = r;
                     if (jpaServiceName.equals(r.getName())) {
@@ -53,19 +53,19 @@ public class JPAVerticle extends AbstractVerticle {
                     } else {
                         logger.info("JPAService: {} is created at proxy address: {}, but not published.", jpaServiceName, jpaAddress);
                     }
-                    startFuture.complete();
+                    promise.complete();
                 }
             });
     }
 
     @Override
-    public void stop(Future<Void> stopFuture) throws Exception {
+    public void stop(Promise<Void> promise) throws Exception {
         if (this.discovery != null && this.record != null) {
             this.discovery
                 .rxUnpublish(this.record.getRegistration())
-                .subscribe(CompletableHelper.toObserver(stopFuture));
+                .subscribe(CompletableHelper.toObserver(promise));
         } else {
-            stopFuture.complete();
+            promise.complete();
         }
     }
 

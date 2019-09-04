@@ -8,7 +8,7 @@
     <version>14</version>
   </parent>
 
-  <groupId>com.spidercoding</groupId>
+  <groupId>io.github.gaol.vertx.ext</groupId>
   <artifactId>vertx-jpa</artifactId>
   <version>1.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
@@ -24,7 +24,7 @@
     <version.hibernate>5.3.9.Final</version.hibernate>
     <version.hibernate-validator>6.0.14.Final</version.hibernate-validator>
     <version.junit>4.12</version.junit>
-    <vertx.version>3.7.1</vertx.version>
+    <vertx.version>3.8.1</vertx.version>
     <version.slf4j>1.7.25</version.slf4j>
   </properties>
 
@@ -44,7 +44,7 @@
             <sourceFileExclude>**/package-info.java</sourceFileExclude>
           </sourceFileExcludes>
           <sourceFileIncludes>
-            <sourceFileInclude>com/spidercoding/**/*.java</sourceFileInclude>
+            <sourceFileInclude>io/github/gaol/vertx/ext/jpa/**/*.java</sourceFileInclude>
           </sourceFileIncludes>
           <additionalparam>-Xdoclint:none --allow-script-in-comments</additionalparam>
         </configuration>

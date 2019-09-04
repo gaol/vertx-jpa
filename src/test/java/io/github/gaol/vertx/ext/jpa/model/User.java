@@ -1,4 +1,4 @@
-package com.spidercoding.vertx.jpa.model;
+package io.github.gaol.vertx.ext.jpa.model;
 
 import java.util.List;
 import java.util.Objects;

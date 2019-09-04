@@ -1,4 +1,4 @@
-package com.spidercoding.vertx.jpa;
+package io.github.gaol.vertx.ext.jpa;
 
 import java.util.List;
 import java.util.Objects;
@@ -34,6 +34,11 @@ import io.vertx.serviceproxy.ServiceBinder;
 @ProxyGen
 @VertxGen
 public interface JPAService {
+
+    /**
+     * The default service name for this JPAService in the {@link ServiceDiscovery}.
+     */
+    String DEFAULT_SERVICE_NAME = "vertx.ext.jpa.service";
 
     /**
      * Configure key for the JPA persistent unit name, defaults to {@link DEFAULT_SERVICE_NAME}
@@ -77,11 +82,6 @@ public interface JPAService {
     String DEFAULT_SERVICE_PROXY_ADDRESS = "vertx.ext.jpa.service";
 
     /**
-     * The default service name for this JPAService in the {@link ServiceDiscovery}.
-     */
-    String DEFAULT_SERVICE_NAME = "vertx.ext.jpa.service";
-
-    /**
      * The Single to create the JPAService with configuration.
      *
      * @param vertx the Vertx instance
@@ -122,9 +122,7 @@ public interface JPAService {
     @GenIgnore
     static Single<JPAService> rxCreate(Vertx vertx, String serviceName, JsonObject config, Supplier<EntityManagerFactory> emfProvider) {
         Objects.requireNonNull(vertx, "Vertx is required");
-        return SingleHelper.toSingle(handler -> {
-            new JPAServiceImpl(vertx, serviceName, config, emfProvider, handler);
-        });
+        return SingleHelper.toSingle(handler -> new JPAServiceImpl(vertx, serviceName, config, emfProvider, handler));
     }
 
     /**
@@ -141,12 +139,9 @@ public interface JPAService {
     static MessageConsumer<JsonObject> rxRegister(Vertx vertx, JPAService jpaService, String serviceAddress) {
         ServiceBinder sb = new ServiceBinder(vertx).setAddress(serviceAddress);
         MessageConsumer<JsonObject> mc = sb.register(JPAService.class, jpaService);
-        vertx.getOrCreateContext().addCloseHook(new Closeable() {
-            @Override
-            public void close(Handler<AsyncResult<Void>> completionHandler) {
-                completionHandler.handle(Future.succeededFuture());
-                sb.unregister(mc);
-            }
+        vertx.getOrCreateContext().addCloseHook(completionHandler -> {
+            completionHandler.handle(Future.succeededFuture());
+            sb.unregister(mc);
         });
         return mc;
     }
@@ -176,9 +171,7 @@ public interface JPAService {
      */
     @GenIgnore
     static Maybe<JPAService> rxDiscovery(ServiceDiscovery discovery, String serviceName) {
-        return discovery.rxGetRecord(r -> r.getName().equals(serviceName)).map(r -> {
-            return discovery.getReference(r).getAs(JPAService.class);
-        });
+        return discovery.rxGetRecord(r -> r.getName().equals(serviceName)).map(r -> discovery.getReference(r).getAs(JPAService.class));
     }
 
     /**
@@ -191,7 +184,7 @@ public interface JPAService {
      * @return the JPAService Proxy
      */
     @GenIgnore
-    static com.spidercoding.vertx.jpa.reactivex.JPAService createProxy(Vertx vertx) {
+    static io.github.gaol.vertx.ext.jpa.reactivex.JPAService createProxy(Vertx vertx) {
         return createProxy(vertx, DEFAULT_SERVICE_PROXY_ADDRESS);
     }
 
@@ -206,10 +199,10 @@ public interface JPAService {
      * @return the JPAService Proxy
      */
     @GenIgnore
-    static com.spidercoding.vertx.jpa.reactivex.JPAService createProxy(Vertx vertx, String address) {
+    static io.github.gaol.vertx.ext.jpa.reactivex.JPAService createProxy(Vertx vertx, String address) {
         Objects.requireNonNull(vertx, "Vertx is required");
         Objects.requireNonNull(address, "JPAService Address is required");
-        return new com.spidercoding.vertx.jpa.reactivex.JPAService(
+        return new io.github.gaol.vertx.ext.jpa.reactivex.JPAService(
                 new JPAServiceVertxEBProxy(vertx, address));
     }
 

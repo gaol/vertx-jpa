@@ -1,4 +1,4 @@
-package com.spidercoding.vertx.jpa;
+package io.github.gaol.vertx.ext.jpa;
 
 import java.util.Properties;
 import java.util.function.Supplier;
@@ -30,10 +30,10 @@ public class HibernateService {
         return JPAService.rxCreate(vertx, serviceName, config, new HibernateSessionFactorySupplier(config));
     }
 
-    public static class HibernateSessionFactorySupplier implements Supplier<EntityManagerFactory> {
+    static class HibernateSessionFactorySupplier implements Supplier<EntityManagerFactory> {
         private final JsonObject config;
 
-        public HibernateSessionFactorySupplier(JsonObject config) {
+        HibernateSessionFactorySupplier(JsonObject config) {
             this.config = config;
         }
 

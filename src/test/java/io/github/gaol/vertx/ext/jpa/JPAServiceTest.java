@@ -1,4 +1,4 @@
-package com.spidercoding.vertx.jpa;
+package io.github.gaol.vertx.ext.jpa;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.spidercoding.vertx.jpa.model.Project;
+import io.github.gaol.vertx.ext.jpa.model.Project;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;

@@ -1,4 +1,4 @@
-package com.spidercoding.vertx.jpa;
+package io.github.gaol.vertx.ext.jpa;
 
 
 import java.lang.reflect.Method;
@@ -24,6 +24,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 
+import io.vertx.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,12 +35,6 @@ import io.reactivex.Single;
 import io.reactivex.SingleSource;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
@@ -62,9 +57,6 @@ class JPAServiceImpl implements JPAService {
     // maybe multiple EntityManagerFactory in one application, like for different databases.
     private final LocalMap<String, EntityManagerFactoryHolder> map;
 
-    // configuration used to produce the EntityManagerFactory
-    // including extra configurations as well needed for this Service.
-    private final JsonObject config;
     // serviceName should be global unique, each for one SessionFactory.
     private final String serviceName;
 
@@ -75,10 +67,13 @@ class JPAServiceImpl implements JPAService {
     JPAServiceImpl(Vertx vertx, String serviceName, JsonObject config, Supplier<EntityManagerFactory> emfSupplier, Handler<AsyncResult<JPAService>> readyHandler) {
         super();
         this.vertx = vertx;
-        this.config = config == null ? new JsonObject() : config;
-        this.serviceName = serviceName == null ? this.config.getString(CONFIG_PERSISTENT_NAME, DEFAULT_SERVICE_NAME) : serviceName;
+        // configuration used to produce the EntityManagerFactory
+        // including extra configurations as well needed for this Service.
+        JsonObject theConfig = config == null ? new JsonObject() : config;
+        this.serviceName = serviceName == null ? theConfig.getString(CONFIG_PERSISTENT_NAME, DEFAULT_SERVICE_NAME) : serviceName;
         this.map = vertx.sharedData().getLocalMap(LOCAL_MAP);
-        Future<JPAService> future = Future.<JPAService>future().setHandler(readyHandler);
+        Promise<JPAService> promise = Promise.promise();
+        promise.future().setHandler(readyHandler);
         synchronized (this.vertx) {
             this.emfHolder = map.get(this.serviceName);
             if (this.emfHolder == null) {
@@ -92,10 +87,10 @@ class JPAServiceImpl implements JPAService {
                     } catch (Exception e) {
                         f.fail(e);
                     }
-                }, future);
+                }, promise);
             } else {
                 emfHolder.incRefCount();
-                future.complete(this);
+                promise.complete(this);
             }
             this.exec = this.emfHolder.exec();
         }
@@ -149,10 +144,10 @@ class JPAServiceImpl implements JPAService {
         void close(Handler<AsyncResult<Void>> completionHandler) {
             synchronized (vertx) {
                 if (refCount.decrementAndGet() == 0) {
-                    Future<Void> f1 = Future.future();
-                    Future<Void> f2 = Future.future();
+                    Promise<Void> f1 = Promise.promise();
+                    Promise<Void> f2 = Promise.promise();
                     if (completionHandler != null) {
-                        CompositeFuture.all(f1, f2).<Void> map(f -> null).setHandler(completionHandler);
+                        CompositeFuture.all(f1.future(), f2.future()).<Void> map(f -> null).setHandler(completionHandler);
                     }
                     if (emf != null) {
                         vertx.executeBlocking(future -> {

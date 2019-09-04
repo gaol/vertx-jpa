@@ -1,4 +1,4 @@
-package com.spidercoding.vertx.jpa;
+package io.github.gaol.vertx.ext.jpa;
 
 import javax.persistence.AttributeConverter;
 
