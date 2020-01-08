@@ -22,7 +22,7 @@
 
     <version.h2database>1.4.197</version.h2database>
     <version.hibernate>5.3.9.Final</version.hibernate>
-    <version.hibernate-validator>6.0.14.Final</version.hibernate-validator>
+    <version.hibernate-validator>6.1.0.Final</version.hibernate-validator>
     <version.junit>4.12</version.junit>
     <vertx.version>3.8.1</vertx.version>
     <version.slf4j>1.7.25</version.slf4j>
